@@ -1,0 +1,47 @@
+{
+  "name": "dsh-channel-telegram",
+  "version": "0.1.0",
+  "description": "Telegram channel plugin for DeepSeek Harness — chat with your harness agent from Telegram",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/index.d.ts",
+    "README.md",
+    "LICENSE",
+    "examples"
+  ],
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "telegram",
+    "bot",
+    "channel"
+  ],
+  "license": "MIT",
+  "author": "yhc3577",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yhc3577/dsh-channel-telegram.git"
+  },
+  "homepage": "https://github.com/yhc3577/dsh-channel-telegram#readme",
+  "bugs": {
+    "url": "https://github.com/yhc3577/dsh-channel-telegram/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5"
+  }
+}

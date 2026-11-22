@@ -1,0 +1,26 @@
+# 在 profile 的 cordis.patch.yml 里挂载本插件。
+#
+# 1) 安装（把插件装进某个 profile）：
+#      dsh plugin --profile tg add dsh-channel-telegram
+#    本地开发时也可以直接装目录：
+#      dsh plugin --profile tg add /path/to/dsh-channel-telegram
+#
+# 2) 把下面的条目加到 ~/.dsh/profiles/tg/cordis.patch.yml：
+#
+# 3) 启动（境内需要代理时带上 NODE_OPTIONS）：
+#      NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
+
+- id: channel-telegram
+  name: dsh-channel-telegram
+  config:
+    # BotFather 给的 token；也可以写成 ${env.TELEGRAM_BOT_TOKEN} 这类占位符。
+    botToken: "123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    # 白名单：只有这些 chat 能触发 agent。留空等于谁都不能用。
+    allowedChatIds:
+      - "8637406466"
+    # 模型路由，与 dsh 里可用的 provider/model 一致。
+    provider: deepseek-official
+    model: deepseek-flash
+    # agent 的工作目录，必须是绝对路径且已存在。
+    cwd: /data/code/playground
+    pollTimeoutSeconds: 30
