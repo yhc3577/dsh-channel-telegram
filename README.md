@@ -57,11 +57,20 @@ dsh plugin --profile tg add /path/to/dsh-channel-telegram
 dsh tg
 ```
 
-国内直连 `api.telegram.org` 基本不可达，需要让 Node 走代理：
+国内直连 `api.telegram.org` 基本不可达。两种办法：
+
+```yaml
+# 推荐：写进插件配置，插件自己开启 fetch 代理
+config:
+  proxy: http://127.0.0.1:7890
+```
 
 ```bash
+# 或者让宿主进程整体走代理
 NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
 ```
+
+> 注意：`proxy` 是进程级开关（Node 的 fetch 只认进程环境变量），宿主进程里其它 `fetch` 也会走同一个代理。
 
 ## 配置项
 
@@ -78,6 +87,7 @@ NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
 | `cwd` | 进程 cwd | Agent 的工作目录，必须已存在 |
 | `pollTimeoutSeconds` | `30` | getUpdates 长轮询超时 |
 | `maxMessageChars` | `4000` | 长回复按行拆分发送的上限 |
+| `proxy` | 空 | 如 `http://127.0.0.1:7890`。插件会在首次请求前为本进程补上 `HTTPS_PROXY` + `NODE_USE_ENV_PROXY`，因此**不需要**带 `--use-env-proxy` 启动宿主 |
 
 ## 权限
 

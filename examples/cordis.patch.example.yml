@@ -24,3 +24,5 @@
     # agent 的工作目录，必须是绝对路径且已存在。
     cwd: /data/code/playground
     pollTimeoutSeconds: 30
+    # 境内访问 api.telegram.org 需要代理；填上后插件会自己开启 fetch 代理。
+    proxy: http://127.0.0.1:7890

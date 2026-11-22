@@ -1,6 +1,6 @@
 {
   "name": "dsh-channel-telegram",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Telegram channel plugin for DeepSeek Harness — chat with your harness agent from Telegram",
   "type": "module",
   "main": "lib/index.js",
