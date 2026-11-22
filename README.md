@@ -42,14 +42,14 @@ dsh plugin --profile tg add /path/to/dsh-channel-telegram
 然后在 `~/.dsh/profiles/tg/cordis.patch.yml` 里挂载，参考 [`examples/cordis.patch.example.yml`](examples/cordis.patch.example.yml)：
 
 ```yaml
-- id: channel-telegram
-  name: dsh-channel-telegram
-  config:
-    botToken: "123456:ABCDEF..."
-    allowedChatIds: ["8637406466"]
-    provider: deepseek-official
-    model: deepseek-flash
-    cwd: /data/code/playground
+- insert:
+    - id: channel-telegram
+      name: dsh-channel-telegram
+      config:
+        botToken: "123456:ABCDEF..."
+        allowedChatIds: ["8637406466"]
+        cwd: /data/code/playground   # 必填
+        proxy: http://127.0.0.1:7890
 ```
 
 启动：
@@ -76,13 +76,30 @@ config:
 | `allowedChatIds` | `[]` | 允许的 chat id 字符串列表 |
 | `allowedUserIds` | `[]` | 允许的 user id，与 chat 白名单取并集 |
 | `allowAllChats` | `false` | 显式放开白名单（仅限本地一次性测试） |
-| `provider` | `deepseek-official` | 会话使用的 LLM provider |
-| `model` | `deepseek-flash` | 会话使用的 model |
-| `reasoningEffort` | 空 | 透传给模型路由 |
-| `cwd` | 进程 cwd | Agent 的工作目录，必须已存在 |
+| `provider` | 空（跟随 profile） | 想把这个通道固定到某个模型时，与 `model` 一起写 |
+| `model` | 空（跟随 profile） | 同上；只写一个会直接报配置错误 |
+| `reasoningEffort` | 空 | 透传给模型路由，需同时配置 `provider`/`model` |
+| `cwd` | **必填** | Agent 的工作目录，必须是已存在的绝对路径 |
 | `pollTimeoutSeconds` | `30` | getUpdates 长轮询超时 |
 | `maxMessageChars` | `4000` | 长回复按行拆分发送的上限 |
 | `proxy` | 空 | 如 `http://127.0.0.1:7890`。插件自带 CONNECT 隧道，**不需要**宿主带 `--use-env-proxy`，也不会改宿主的全局环境 |
+
+## 模型：跟随 profile，不写死在插件里
+
+通道插件不定义默认模型。省略 `provider` / `model` 时，Harness 会按本 profile 的
+`agent-default-model` 条目给 Session 选模型，也就是和 Web GUI 用的是同一份配置：
+
+```yaml
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: newapi
+    model: DeepSeek-V4.1-Flash
+```
+
+所以想换模型，改 profile 里这一条目即可，Telegram 侧自动跟着变；只有当你希望
+「这个通道固定用别的模型、不随 GUI 默认变化」时，才在插件配置里同时写
+`provider` 和 `model`（写在插件块里的是**覆盖**，不是默认值）。
 
 ## 权限
 

@@ -6,10 +6,12 @@ export interface Config {
   allowedChatIds?: string[];
   allowedUserIds?: string[];
   allowAllChats?: boolean;
+  /** Set together with `model` to pin this channel to one model; omit both to follow the profile. */
   provider?: string;
   model?: string;
   reasoningEffort?: string;
-  cwd?: string;
+  /** Required: every Telegram Session needs an explicit working directory. */
+  cwd: string;
   pollTimeoutSeconds?: number;
   maxMessageChars?: number;
 }

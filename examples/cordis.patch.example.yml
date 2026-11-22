@@ -5,24 +5,27 @@
 #    本地开发时也可以直接装目录：
 #      dsh plugin --profile tg add /path/to/dsh-channel-telegram
 #
-# 2) 把下面的条目加到 ~/.dsh/profiles/tg/cordis.patch.yml：
+# 2) 把下面的 insert 条目加到 ~/.dsh/profiles/tg/cordis.patch.yml
+#    （新条目必须写在 `- insert:` 下面，直接写 `- id:` 会被判为未知条目）。
 #
-# 3) 启动（境内需要代理时带上 NODE_OPTIONS）：
-#      NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
+# 3) 启动（境内需要代理时把 proxy 写进 config，插件自带 CONNECT 隧道）：
+#      dsh tg
 
-- id: channel-telegram
-  name: dsh-channel-telegram
-  config:
-    # BotFather 给的 token；也可以写成 ${env.TELEGRAM_BOT_TOKEN} 这类占位符。
-    botToken: "123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    # 白名单：只有这些 chat 能触发 agent。留空等于谁都不能用。
-    allowedChatIds:
-      - "8637406466"
-    # 模型路由，与 dsh 里可用的 provider/model 一致。
-    provider: deepseek-official
-    model: deepseek-flash
-    # agent 的工作目录，必须是绝对路径且已存在。
-    cwd: /data/code/playground
-    pollTimeoutSeconds: 30
-    # 境内访问 api.telegram.org 需要代理；填上后插件会自己开启 fetch 代理。
-    proxy: http://127.0.0.1:7890
+- insert:
+    - id: channel-telegram
+      name: dsh-channel-telegram
+      config:
+        # BotFather 给的 token。
+        botToken: "123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        # 白名单：只有这些 chat 能触发 agent。留空等于谁都不能用。
+        allowedChatIds:
+          - "8637406466"
+        # agent 的工作目录，必须是绝对路径且已存在（必填）。
+        cwd: /data/code/playground
+        # 模型不在插件里配：跟随本 profile 的 agent-default-model 条目。
+        # 只有想把这个通道固定到别的模型时，才同时写 provider / model：
+        # provider: newapi
+        # model: DeepSeek-V4.1-Flash
+        pollTimeoutSeconds: 30
+        # 境内访问 api.telegram.org 需要代理；插件自带 CONNECT 隧道，不用改宿主环境。
+        proxy: http://127.0.0.1:7890
