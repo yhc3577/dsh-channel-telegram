@@ -21,7 +21,8 @@ Telegram  ──长轮询──▶  channel-telegram (插件)
 - **只回文本**：模型 reasoning / thinking 块不会漏到聊天窗口，只发送 `text` 块。
 - **白名单兜底**：未配置白名单直接拒绝启动；陌生账号发消息会被拒绝。
 - **命令**：`/new` 开新会话、`/status` 看模型与工作目录、`/help` 说明。
-- **零额外依赖**：只用 Node 内置 `fetch`，不需要 grammY / telegraf 之类的库。
+- **零额外依赖**：只用 Node 内置 `http/https/tls`，不需要 grammY / telegraf 之类的库。
+- **自带代理隧道**：`proxy` 配置让插件自己在宿主里翻墙，不要求重启时加启动参数。
 
 ## 安装
 
@@ -57,20 +58,14 @@ dsh plugin --profile tg add /path/to/dsh-channel-telegram
 dsh tg
 ```
 
-国内直连 `api.telegram.org` 基本不可达。两种办法：
+国内直连 `api.telegram.org` 基本不可达，插件因此自带 HTTP CONNECT 隧道：
 
 ```yaml
-# 推荐：写进插件配置，插件自己开启 fetch 代理
 config:
   proxy: http://127.0.0.1:7890
 ```
 
-```bash
-# 或者让宿主进程整体走代理
-NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
-```
-
-> 注意：`proxy` 是进程级开关（Node 的 fetch 只认进程环境变量），宿主进程里其它 `fetch` 也会走同一个代理。
+这样写的好处是**不需要**用 `--use-env-proxy` 重启宿主，也不会把宿主的全局 `fetch` 拖进代理——隧道只属于这个通道自己的连接。（Node 的 `fetch` 只在启动时认代理变量，长期运行的 Web 宿主里再设环境变量通常已经不生效，所以插件不用 `fetch`。）
 
 ## 配置项
 
@@ -87,7 +82,7 @@ NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
 | `cwd` | 进程 cwd | Agent 的工作目录，必须已存在 |
 | `pollTimeoutSeconds` | `30` | getUpdates 长轮询超时 |
 | `maxMessageChars` | `4000` | 长回复按行拆分发送的上限 |
-| `proxy` | 空 | 如 `http://127.0.0.1:7890`。插件会在首次请求前为本进程补上 `HTTPS_PROXY` + `NODE_USE_ENV_PROXY`，因此**不需要**带 `--use-env-proxy` 启动宿主 |
+| `proxy` | 空 | 如 `http://127.0.0.1:7890`。插件自带 CONNECT 隧道，**不需要**宿主带 `--use-env-proxy`，也不会改宿主的全局环境 |
 
 ## 权限
 
