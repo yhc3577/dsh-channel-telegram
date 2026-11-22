@@ -103,6 +103,25 @@ config:
 | `/new` | 轮换 Session id，开一段干净历史 |
 | `/status` | 当前 session id、模型、cwd、agent 状态 |
 
+## 诊断
+
+排查「消息没反应」时，用环境变量把关键步骤写到文件：
+
+```bash
+DSH_CHANNEL_TELEGRAM_DEBUG=/tmp/dsh-channel-telegram.log dsh web
+```
+
+日志会记录 `dispatch → runPrompt → create/resume → followup → turn/end → reply` 每一步，
+以及失败原因。不设置该变量时插件不写任何文件。
+
+## Session 身份
+
+每个私聊对应一个 Session，id 为 `telegram:<chatId>`，`/new` 后变成
+`telegram:<chatId>#<generation>-<时间戳>`。
+
+harness 的会话 id 是**全局唯一**的：若该 id 已被其它进程（例如旧脚本、另一个 profile）
+以写锁占用，插件会自动换一个新身份并重试一次，而不是卡死。
+
 ## 限制
 
 - 只处理文本消息；图片/语音/文件会被忽略（后续可以走 attachment seam）。
