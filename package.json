@@ -43,5 +43,9 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5"
+  },
+  "scripts": {
+    "check": "node --check lib/index.js",
+    "test": "node --test test/*.test.js"
   }
 }

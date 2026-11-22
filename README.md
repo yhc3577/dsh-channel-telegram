@@ -107,12 +107,13 @@ NODE_OPTIONS=--use-env-proxy HTTPS_PROXY=http://127.0.0.1:7890 dsh tg
 
 ## 开发
 
-纯 ESM、无构建步骤：
+纯 ESM、无构建步骤、无运行时依赖：
 
 ```bash
-node --check lib/index.js
-# 装到测试 profile 后跑：
-NODE_OPTIONS=--use-env-proxy dsh --profile tg --dump-config
+npm test                 # 7 个 node:test 用例，覆盖 Config 校验与默认值
+npm run check            # node --check lib/index.js
+# 装到测试 profile 后先看组合结果，再启动：
+dsh --profile tg --dump-config | grep -n -A8 channel-telegram
 ```
 
 代码结构就一个文件 [`lib/index.js`](lib/index.js)：
