@@ -2,6 +2,9 @@
 
 把 **DeepSeek Harness** 接进 Telegram 的通道插件：在 Telegram 里发一条消息，就是一个跑在你本机 harness 里的任务。
 
+> 📖 **只想装好就用？看 [用户手册](docs/user-guide.md)**（安装步骤、配置项、命令、排错、升级卸载）。
+> 本 README 侧重设计取舍与开发。
+
 它不是"再起一个子进程跑 SDK"，而是**进程内的 Cordis 插件**——挂进某个 profile 后，直接复用该 profile 的 `agents` / `sessions` 服务，所以你看到的会话、权限、模型路由、工具和 Web GUI 里完全一致。
 
 ```text
@@ -16,13 +19,14 @@ Telegram  ──长轮询──▶  channel-telegram (插件)
 
 ## 特性
 
-- **一对一映射**：一个 Telegram chat = 一个 Harness Session（`tg:<chatId>`），重启进程会自动 `resume`，对话不断。
+- **一对一映射**：一个 Telegram chat = 一个 Harness Session（`telegram:<chatId>`），重启进程会自动 `resume`，对话不断。
 - **串行队列**：同一个 chat 的多条消息按顺序执行，不会互相打断。
 - **只回文本**：模型 reasoning / thinking 块不会漏到聊天窗口，只发送 `text` 块。
 - **白名单兜底**：未配置白名单直接拒绝启动；陌生账号发消息会被拒绝。
 - **命令**：`/new` 开新会话、`/status` 看模型与工作目录、`/help` 说明。
 - **零额外依赖**：只用 Node 内置 `http/https/tls`，不需要 grammY / telegraf 之类的库。
 - **自带代理隧道**：`proxy` 配置让插件自己在宿主里翻墙，不要求重启时加启动参数。
+- **模型不写死**：不配模型时跟随 profile 的 `agent-default-model`，与 Web GUI 同一份配置。
 
 ## 安装
 
@@ -55,8 +59,12 @@ dsh plugin --profile tg add /path/to/dsh-channel-telegram
 启动：
 
 ```bash
-dsh tg
+dsh tg          # 独立 profile
+# 或重启你自己的宿主（Web profile 走 systemd 的话）
+systemctl --user restart dsh-web.service
 ```
+
+配置改完不重启也能生效（HMR 只热挂载配置）；但**升级插件版本**必须重启，HMR 换不了模块代码。
 
 国内直连 `api.telegram.org` 基本不可达，插件因此自带 HTTP CONNECT 隧道：
 
@@ -151,7 +159,7 @@ harness 的会话 id 是**全局唯一**的：若该 id 已被其它进程（例
 纯 ESM、无构建步骤、无运行时依赖：
 
 ```bash
-npm test                 # 7 个 node:test 用例，覆盖 Config 校验与默认值
+npm test                 # 11 个 node:test 用例，覆盖 Config 校验与默认值
 npm run check            # node --check lib/index.js
 # 装到测试 profile 后先看组合结果，再启动：
 dsh --profile tg --dump-config | grep -n -A8 channel-telegram
@@ -159,8 +167,8 @@ dsh --profile tg --dump-config | grep -n -A8 channel-telegram
 
 代码结构就一个文件 [`lib/index.js`](lib/index.js)：
 
-- `Config`：schemastery schema，决定 profile 里的 YAML 写法；
-- `apply(ctx, config)`：校验配置 → 建 Agent 映射 → 启动长轮询 → `ctx.on('session/event')` 收集回答；
+- `Config`：Standard Schema（零依赖，Cordis 直接调 `~standard.validate`），决定 profile 里的 YAML 写法；
+- `apply(ctx, config)`：校验配置 → 解析模型（显式覆盖或读 `agentDefaultModel` 服务）→ 建 Agent 映射 → 启动长轮询 → `ctx.on('session/event')` 收集回答；
 - `ctx.effect(() => …)`：返回清理函数，profile 卸载时中止轮询并停掉 typing 定时器。
 
 ## License
